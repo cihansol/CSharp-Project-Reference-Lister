@@ -48,8 +48,7 @@ namespace CSharpRefLister
         }
 
         static void HandleProjectFile(string workingDirectory, string inputFilePath)
-        {
-         
+        {    
             string csProjFilePath = inputFilePath;
             if (!File.Exists(csProjFilePath))
             {
@@ -84,6 +83,7 @@ namespace CSharpRefLister
                 Console.WriteLine(proj.Name.ToString());
             }
             Console.WriteLine($"Process done!");
+
             return;
         }
 
@@ -96,31 +96,21 @@ namespace CSharpRefLister
                 return;
             }
 
-            string[] assemblyFiles = Directory.GetFiles(inputFolderPath, "*.csproj", SearchOption.AllDirectories);
-            if (assemblyFiles.Length == 0)
+            string[] projFiles = Directory.GetFiles(inputFolderPath, "*.csproj", SearchOption.AllDirectories);
+            if (projFiles.Length == 0)
             {
                 Console.WriteLine($"No (.csproj) project files found in folder {inputFolderPath}");
                 return;
             }
 
-            string outputDirectory = Path.Combine(inputFolderPath, "uncompressed_assemblies");
-            Directory.CreateDirectory(outputDirectory);
-
-            foreach (var file in assemblyFiles)
+            foreach (var file in projFiles)
             {
-                string fileName = Path.GetFileName(file);
-    
+                HandleProjectFile(workingDirectory, file);
             }
 
-
-            Console.WriteLine("Parsing Complete.");
+            Console.WriteLine($"Processing of csproj files complete in directory: '{inputFolderPath}'");
             return;
         }
-
-
-        
-
-
 
     }
 
