@@ -1,2 +1,3 @@
 # CSharp-Project-Reference-Lister
-Lists the references of a CSharp project
+
+Uses a modified version of [DotNetProjectParser](https://github.com/bartosz-jarmuz/DotNetProjectParser) to print out the project references and their corresponding versions to a log file.
