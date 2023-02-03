@@ -42,5 +42,12 @@ namespace DotNetProjectParser
         /// Version
         /// </summary>
         public string Version { get; internal set; }
+
+        /// <summary>
+        /// Hint Path for References
+        /// </summary>
+        public string HintPath { get; internal set; }
+
+
     }
 }

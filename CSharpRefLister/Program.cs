@@ -80,26 +80,28 @@ namespace CSharpRefLister
                         }
                         else if (item.ItemType == "Reference")
                         {
-                            int index = item.Include.IndexOf(',');
-                            var name = string.Empty;
-                            var version = string.Empty;
-                            if (index != -1)
+                            if (!String.IsNullOrEmpty(item.Version))
+                                sw.WriteLine($"Name: {item.ItemName} Version: {item.Version}");
+                            else if (!String.IsNullOrEmpty(item.HintPath))
                             {
-                                name = item.Include.Substring(0, index);
-                                var vtk = item.Include.Substring(index + 1);
-                                var ioe = vtk.IndexOf('=') + 1;
-                                var ioc = vtk.IndexOf(',');
-                                var verStr = vtk.Substring(ioe, ioc - ioe);
-                                version = Version.Parse(verStr).ToString();
-                                sw.WriteLine($"Name: {name} Version: {version}");
+                                //Load the assembly
+                                string absolutePath = Path.Combine(Path.GetDirectoryName(inputFilePath), item.HintPath);
+                                if (File.Exists(absolutePath)) 
+                                { 
+                                    Assembly assembly = Assembly.Load(File.ReadAllBytes(absolutePath));
+                                    if (assembly != null)
+                                    {
+                                        sw.WriteLine($"Name: {item.ItemName} Version: {assembly.GetName().Version}");
+                                        continue;
+                                    }
+                                }
+
+                                sw.WriteLine($"Name: {item.ItemName}");
                             }
                             else
                             {
-                                name = item.Include;
-                                version = "none provided";
-                                sw.WriteLine($"Name: {name}");
+                                sw.WriteLine($"Name: {item.ItemName}");
                             }
-
                         }
                     }
                     sw.Flush();

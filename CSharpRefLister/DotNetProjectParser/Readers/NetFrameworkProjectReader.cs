@@ -24,6 +24,9 @@ namespace DotNetProjectParser.Readers
             public static string ItemGroup { get; }= "ItemGroup";
             public static string Include { get; }= "Include";
             public static string CopyToOutputDirectory { get; }= "CopyToOutputDirectory";
+            public static string Version { get; } = "Version";
+            public static string HintPath { get; } = "HintPath";
+
             public const string PlatformTarget = "PlatformTarget";
             public const string Optimize = "Optimize";
             public const string OutputPath = "OutputPath";
@@ -33,6 +36,7 @@ namespace DotNetProjectParser.Readers
             public const string TreatWarningsAsErrors = "TreatWarningsAsErrors";
             public const string WarningsAsErrors = "WarningsAsErrors";
             public const string DebugType = "DebugType";
+
         }
 
         public Project ReadFile(FileInfo projectFile, XDocument projectXml)
@@ -202,6 +206,23 @@ namespace DotNetProjectParser.Readers
                     {
                         item.ResolvedIncludePath = Path.Combine(project.DirectoryPath, item.Include);
                         item.ItemName = Path.GetFileName(item.Include);
+
+                        //Load Reference data
+                        if (xElement.Name.LocalName == "Reference")
+                        {
+                            string[] components = item.Include.Split(',');
+                            if (components.Length > 1)
+                            {
+                                item.ItemName = components[0].Trim();
+                                item.Version = components[1].Trim().Split('=')[1];
+
+                            }
+                            else
+                            {
+                                //A hint path may be provided
+                                item.HintPath = xElement.Elements().FirstOrDefault(x => x.Name.LocalName == XmlNames.HintPath)?.Value;
+                            }
+                        }
                     }
 
                     item.CopyToOutputDirectory = xElement.Elements().FirstOrDefault(x => x.Name.LocalName == XmlNames.CopyToOutputDirectory)?.Value;
