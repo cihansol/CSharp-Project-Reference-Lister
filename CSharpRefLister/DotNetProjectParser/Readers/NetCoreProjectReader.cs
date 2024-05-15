@@ -215,7 +215,8 @@ namespace DotNetProjectParser.Readers
                     if (remove != null)
                     {
                         var index = list.FindIndex(x => x.Include == remove.Value);
-                        list.RemoveAt(index);
+                        if (index != -1)
+                            list.RemoveAt(index);
                         continue;
                     }
 
