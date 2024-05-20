@@ -64,14 +64,18 @@ namespace CSharpRefLister
                 }
             }
 
+
+
             FileInfo file = new FileInfo(inputFilePath);
             Console.WriteLine($"Processing file {file.Name}");
             Project proj = DotNetProjectParser.ProjectFactory.GetProject(file);
             if (proj != null)
             {
-                string outputFilePath = Path.Combine(Path.GetDirectoryName(inputFilePath), $"{file.Name}_processed.log");
-                using (StreamWriter sw = new StreamWriter(outputFilePath, false)) 
-                {         
+                string outputFilePath = Path.Combine(workingDirectory, $"{file.Name}_processed.log");
+                byte[] logData = null;
+                using (MemoryStream ms = new MemoryStream())
+                using (StreamWriter sw = new StreamWriter(ms))
+                {
                     foreach (var item in proj.Items)
                     {
                         if (item.ItemType == "PackageReference")
@@ -86,8 +90,8 @@ namespace CSharpRefLister
                             {
                                 //Load the assembly
                                 string absolutePath = Path.Combine(Path.GetDirectoryName(inputFilePath), item.HintPath);
-                                if (File.Exists(absolutePath)) 
-                                { 
+                                if (File.Exists(absolutePath))
+                                {
                                     Assembly assembly = Assembly.Load(File.ReadAllBytes(absolutePath));
                                     if (assembly != null)
                                     {
@@ -105,6 +109,14 @@ namespace CSharpRefLister
                         }
                     }
                     sw.Flush();
+
+                    logData = ms.ToArray();
+
+                    if (logData != null && logData.Length > 0)
+                    {
+                        File.WriteAllBytes(outputFilePath, logData);
+                    }
+
                 }
                 Console.WriteLine(proj.Name.ToString());
             }
@@ -129,9 +141,15 @@ namespace CSharpRefLister
                 return;
             }
 
+            string processedFilesFolder = Path.Combine(workingDirectory, $"processed_{DateTimeOffset.Now.ToFileTime()}");
+            if (!Directory.Exists(processedFilesFolder))
+            {
+                Directory.CreateDirectory(processedFilesFolder);
+            }
+
             foreach (var file in projFiles)
             {
-                HandleProjectFile(workingDirectory, file);
+                HandleProjectFile(processedFilesFolder, file);
             }
 
             Console.WriteLine($"Processing of csproj files complete in directory: '{inputFolderPath}'");
